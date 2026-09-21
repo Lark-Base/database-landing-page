@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+**/.DS_Store
+
+# 原始页面快照（重建参考用，体积大，不纳入站点仓库）
+飞书多维表格 · AI 时代的数据底座.html
+飞书多维表格 · AI 时代的数据底座_files/
+
+# 编辑器临时/恢复目录
+_tw-recovery/
+
+# 依赖与构建产物（本站为纯静态，无构建）
+node_modules/
+dist/

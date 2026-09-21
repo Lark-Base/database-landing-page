@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>豆包工作跳转通道 · 协议测试台</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%231a1a1a'/%3E%3Cpath d='M6 9h12M6 13h8M6 17h5' stroke='%2300d4a0' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --ink:#16181c; --ink-2:#4a5058; --ink-3:#868d96;
+    --line:#e3e6ea; --bg:#f7f8f9; --card:#fff;
+    --ok:#0a9e6e; --warn:#d97706; --bad:#d63b36; --acc:#2b5cf0;
+    --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  }
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:900px;margin:0 auto;padding:32px 20px 60px}
+
+  /* ── 头部 ── */
+  header{margin-bottom:28px}
+  .kicker{font-family:var(--mono);font-size:12px;color:var(--ink-3);margin-bottom:8px}
+  h1{font-size:26px;font-weight:650;letter-spacing:-.4px;margin-bottom:8px}
+  .lede{font-size:14px;color:var(--ink-2);max-width:62ch}
+  .env{
+    margin-top:16px;padding:11px 14px;background:var(--card);
+    border:1px solid var(--line);border-radius:8px;
+    font-family:var(--mono);font-size:12px;color:var(--ink-2);
+    display:flex;flex-wrap:wrap;gap:6px 18px;
+  }
+  .env b{color:var(--ink);font-weight:600}
+
+  /* ── 分区 ── */
+  section{margin-top:30px}
+  h2{font-size:15px;font-weight:650;margin-bottom:4px}
+  .sub{font-size:13px;color:var(--ink-2);margin-bottom:14px}
+
+  /* ── 测试项 ── */
+  .item{
+    background:var(--card);border:1px solid var(--line);
+    border-radius:10px;padding:16px;margin-bottom:12px;
+  }
+  .item-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:6px}
+  .item-title{font-size:14px;font-weight:600}
+  .tag{
+    font-size:11px;padding:2px 7px;border-radius:4px;font-weight:600;
+    font-family:var(--mono);
+  }
+  .t-ok{background:#e6f7f0;color:var(--ok)}
+  .t-warn{background:#fdf3e3;color:var(--warn)}
+  .t-bad{background:#fdeceb;color:var(--bad)}
+  .t-new{background:#eaf0ff;color:var(--acc)}
+  .item-desc{font-size:13px;color:var(--ink-2);margin-bottom:12px}
+  .item-desc code{
+    font-family:var(--mono);font-size:12px;
+    background:var(--bg);padding:1px 5px;border-radius:3px;
+  }
+  .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  button{
+    font:inherit;font-size:13px;font-weight:500;cursor:pointer;
+    padding:9px 16px;border-radius:7px;border:1px solid var(--line);
+    background:var(--card);color:var(--ink);transition:.15s;
+    min-height:40px;
+  }
+  button:hover{border-color:var(--ink-3)}
+  button.go{background:var(--ink);color:#fff;border-color:var(--ink)}
+  button.go:hover{background:#000}
+  button.sm{padding:7px 12px;font-size:12px}
+  .url{
+    margin-top:10px;font-family:var(--mono);font-size:11px;
+    color:var(--ink-3);word-break:break-all;line-height:1.55;
+    background:var(--bg);padding:9px 11px;border-radius:6px;
+    max-height:78px;overflow-y:auto;
+  }
+
+  /* ── prompt 编辑 ── */
+  textarea{
+    width:100%;font-family:inherit;font-size:13px;line-height:1.65;
+    padding:11px 13px;border:1px solid var(--line);border-radius:8px;
+    resize:vertical;min-height:88px;color:var(--ink);background:var(--card);
+  }
+  textarea:focus{outline:none;border-color:var(--acc)}
+
+  /* ── 结果记录 ── */
+  .log{
+    background:#16181c;color:#d4d8dd;border-radius:10px;padding:14px 16px;
+    font-family:var(--mono);font-size:12px;line-height:1.85;
+    max-height:220px;overflow-y:auto;
+  }
+  .log:empty::after{content:'点击上方按钮后，这里会记录实际走了哪个通道';color:#5d646d}
+  .log .ln{display:block}
+  .log .c-ok{color:#4ade9b} .log .c-warn{color:#fbbf5c} .log .c-bad{color:#f87d78}
+  .log .c-dim{color:#7c848d}
+
+  /* ── 矩阵表 ── */
+  table{width:100%;border-collapse:collapse;font-size:13px;background:var(--card);
+    border:1px solid var(--line);border-radius:10px;overflow:hidden;table-layout:fixed}
+  th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line)}
+  th{background:var(--bg);font-weight:600;font-size:12px;color:var(--ink-2)}
+  tr:last-child td{border-bottom:none}
+  col.c1{width:34%} col.c2{width:22%} col.c3{width:22%} col.c4{width:22%}
+  .y{color:var(--ok);font-weight:600} .n{color:var(--bad);font-weight:600}
+  .q{color:var(--warn);font-weight:600}
+
+  .note{
+    margin-top:14px;padding:12px 14px;background:var(--card);
+    border-left:3px solid var(--acc);border-radius:0 8px 8px 0;
+    font-size:13px;color:var(--ink-2);line-height:1.75;
+  }
+  .note b{color:var(--ink)}
+
+  #toast{
+    position:fixed;left:50%;bottom:32px;transform:translate(-50%,80px);
+    background:var(--ink);color:#fff;padding:12px 20px;border-radius:9px;
+    font-size:13px;box-shadow:0 8px 28px rgba(0,0,0,.2);
+    opacity:0;transition:.25s;pointer-events:none;z-index:99;max-width:86vw;
+  }
+  #toast.on{transform:translate(-50%,0);opacity:1}
+
+  @media(max-width:560px){
+    .wrap{padding:22px 14px 50px}
+    h1{font-size:21px}
+    col.c1,col.c2,col.c3,col.c4{width:auto}
+    th,td{padding:8px 9px;font-size:12px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">BASE DATABASE CLI · 落地页协议验证</div>
+  <h1>豆包工作跳转通道测试台</h1>
+  <p class="lede">用同一段提示词逐个点击各通道，实测「能否打开」「提示词能否带入」「是否自动发送」。所有链接在本页实时生成，改提示词后立即生效。</p>
+  <div class="env">
+    <span>UA 判定：<b id="e-ua">—</b></span>
+    <span>协议：<b>client/doubao/open</b></span>
+    <span>编码：<b>urlsafe base64</b></span>
+  </div>
+</header>
+
+<section>
+  <h2>提示词</h2>
+  <p class="sub">下方所有链接都用这段文本，改完自动重新生成。</p>
+  <textarea id="prompt">帮我基于飞书多维表格搭一个 CRM 销售工作台，数据存在多维表格里，搭好后把多维表格链接和应用预览链接都给我。</textarea>
+</section>
+
+<section>
+  <h2>通道 A · 飞书端内 applink</h2>
+  <p class="sub">提示词由飞书客户端解析后注入豆包，是唯一能完整传递提示词的链路。</p>
+
+  <div class="item">
+    <div class="item-head">
+      <span class="item-title">action=send</span>
+      <span class="tag t-ok">已验证 · 写入并自动发送</span>
+    </div>
+    <p class="item-desc">基准行为。<code>https://</code> 开头，未装飞书时会落到官方兜底页引导下载。</p>
+    <div class="row">
+      <button class="go" data-act="send">在飞书中打开</button>
+      <button class="sm" data-copy="send">复制链接</button>
+    </div>
+    <div class="url" data-url="send"></div>
+  </div>
+
+  <div class="item">
+    <div class="item-head">
+      <span class="item-title">action=jump</span>
+      <span class="tag t-bad">已验证 · 仍然自动发送</span>
+    </div>
+    <p class="item-desc">原本期望「只写入不发送」，实测与 send 一致。协议层无独立语义。</p>
+    <div class="row">
+      <button data-act="jump">在飞书中打开</button>
+      <button class="sm" data-copy="jump">复制链接</button>
+    </div>
+    <div class="url" data-url="jump"></div>
+  </div>
+
+  <div class="item">
+    <div class="item-head">
+      <span class="item-title">action=jump + open_in=paging</span>
+      <span class="tag t-bad">已验证 · 仍然自动发送</span>
+    </div>
+    <p class="item-desc">换 PC 侧边栏容器，行为不变。换容器无法绕过自动发送。</p>
+    <div class="row">
+      <button data-act="paging">在侧边栏打开</button>
+      <button class="sm" data-copy="paging">复制链接</button>
+    </div>
+    <div class="url" data-url="paging"></div>
+  </div>
+</section>
+
+<section>
+  <h2>通道 B / C · 浏览器侧</h2>
+  <p class="sub">提示词由豆包自己解析 url-action。该协议在新版客户端已失效，能打开但提示词丢失。</p>
+
+  <div class="item">
+    <div class="item-head">
+      <span class="item-title">豆包网页版 url-action</span>
+      <span class="tag t-bad">已验证 · 提示词丢失</span>
+    </div>
+    <p class="item-desc">打开 <code>www.doubao.com</code>，但 <code>Send_Message</code> 不再消费 text。</p>
+    <div class="row">
+      <button data-act="web">打开网页版</button>
+      <button class="sm" data-copy="web">复制链接</button>
+    </div>
+    <div class="url" data-url="web"></div>
+  </div>
+
+  <div class="item">
+    <div class="item-head">
+      <span class="item-title">桌面客户端 deeplink</span>
+      <span class="tag t-bad">已验证 · 提示词丢失</span>
+    </div>
+    <p class="item-desc">自定义 scheme，<b>未安装时静默失败</b>，无任何兜底页。双端共存还可能唤起错误的端。</p>
+    <div class="row">
+      <button data-act="desktop">唤起客户端</button>
+      <button class="sm" data-copy="desktop">复制链接</button>
+    </div>
+    <div class="url" data-url="desktop"></div>
+  </div>
+</section>
+
+<section>
+  <h2>建议方案 · 环境自动分流</h2>
+  <p class="sub">落地页实际要用的逻辑：先复制提示词，再按环境选通道，失败逐级降级。</p>
+
+  <div class="item">
+    <div class="item-head">
+      <span class="item-title">一键打开（自动判断）</span>
+      <span class="tag t-new">推荐</span>
+    </div>
+    <p class="item-desc">
+      飞书端内走 applink；浏览器先用 <code>https://</code> applink 唤起飞书（保留官方兜底），
+      失败退到网页版。全程先写剪贴板，浏览器场景明确提示粘贴。
+    </p>
+    <div class="row">
+      <button class="go" id="smart">用豆包工作开始</button>
+      <button class="sm" id="copy-only">只复制提示词</button>
+      <button class="sm" id="dl">下载豆包工作</button>
+    </div>
+  </div>
+
+  <div class="log" id="log"></div>
+</section>
+
+<section>
+  <h2>实测结论矩阵</h2>
+  <p class="sub">四格已全部验证完毕。</p>
+  <table>
+    <colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"></colgroup>
+    <thead><tr><th>通道</th><th>能打开</th><th>带入提示词</th><th>可不发送</th></tr></thead>
+    <tbody>
+      <tr><td>飞书端内 · send</td><td class="y">是</td><td class="y">是</td><td class="n">否</td></tr>
+      <tr><td>飞书端内 · jump</td><td class="y">是</td><td class="y">是</td><td class="n">否</td></tr>
+      <tr><td>浏览器 → 飞书客户端</td><td class="y">是</td><td class="y">是</td><td class="n">否</td></tr>
+      <tr><td>浏览器 → 豆包客户端</td><td class="y">是</td><td class="n">丢失</td><td class="q">靠粘贴</td></tr>
+      <tr><td>浏览器 → 豆包网页版</td><td class="y">是</td><td class="n">丢失</td><td class="q">靠粘贴</td></tr>
+    </tbody>
+  </table>
+  <div class="note">
+    <b>两条关键差异。</b>提示词能否带入，取决于由谁解析：飞书客户端解析 <code>query</code> 走的是 client/doubao/open 协议，可用；豆包解析 url-action 已失效。<br>
+    <b>未安装时的兜底也不同：</b><code>https://applink.feishu.cn</code> 有官方兜底页引导下载飞书；<code>doubao://</code> 是自定义 scheme，未安装时什么都不会发生，兜底页必须落地页自己做。
+  </div>
+</section>
+
+</div>
+<div id="toast"></div>
+
+<script>
+(function(){
+  'use strict';
+
+  var $ = function(s){ return document.querySelector(s); };
+  var promptEl = $('#prompt'), logEl = $('#log'), toastEl = $('#toast');
+
+  /* ── 编码：urlsafe base64，与官方链接逐字符一致 ── */
+  function b64url(str){
+    var bytes = new TextEncoder().encode(str), bin = '';
+    for (var i=0;i<bytes.length;i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }
+
+  function applink(p, opt){
+    opt = opt || {};
+    var q = [['action', opt.action || 'send'], ['query', b64url(p)], ['new_chat','true']];
+    if (opt.openIn) q.push(['open_in', opt.openIn]);
+    q.push(['from','baseapp_landing']);
+    if (opt.clickType) q.push(['click_type', opt.clickType]);
+    return 'https://applink.feishu.cn/client/doubao/open?' +
+      q.map(function(kv){ return kv[0]+'='+kv[1]; }).join('&');
+  }
+
+  function webLink(p){
+    var a = { pluginId:'Send_Message', payload:{ text:p, auto_send:true } };
+    return 'https://www.doubao.com/chat/url-action?action=' +
+      encodeURIComponent(JSON.stringify(a));
+  }
+
+  function desktopLink(p){
+    return 'doubao://doubaoapp/open-url?url=' + encodeURIComponent(webLink(p));
+  }
+
+  var BUILD = {
+    send:    function(p){ return applink(p, {action:'send', clickType:'test_send'}); },
+    jump:    function(p){ return applink(p, {action:'jump', clickType:'test_jump'}); },
+    paging:  function(p){ return applink(p, {action:'jump', openIn:'paging', clickType:'test_paging'}); },
+    web:     function(p){ return webLink(p); },
+    desktop: function(p){ return desktopLink(p); }
+  };
+
+  /* ── UI ── */
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add('on');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function(){ toastEl.classList.remove('on'); }, 2600);
+  }
+
+  function log(msg, cls){
+    var t = new Date().toTimeString().slice(0,8);
+    var ln = document.createElement('span');
+    ln.className = 'ln';
+    ln.innerHTML = '<span class="c-dim">'+t+'</span>  ' +
+      '<span class="'+(cls||'')+'">'+msg+'</span>';
+    logEl.appendChild(ln);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function render(){
+    var p = promptEl.value;
+    Object.keys(BUILD).forEach(function(k){
+      var box = document.querySelector('[data-url="'+k+'"]');
+      if (box) box.textContent = BUILD[k](p);
+    });
+  }
+
+  function copy(text){
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text).then(function(){ return true; })
+        .catch(function(){ return fallbackCopy(text); });
+    }
+    return Promise.resolve(fallbackCopy(text));
+  }
+  function fallbackCopy(text){
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position='fixed'; ta.style.top='-9999px';
+    document.body.appendChild(ta); ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  var inLark = /Lark|Feishu/i.test(navigator.userAgent);
+  $('#e-ua').textContent = inLark ? '飞书客户端内' : '普通浏览器';
+
+  /* ── 单通道按钮 ── */
+  document.addEventListener('click', function(e){
+    var go = e.target.closest('[data-act]');
+    if (go) {
+      var k = go.dataset.act, url = BUILD[k](promptEl.value);
+      var label = { send:'applink action=send', jump:'applink action=jump',
+        paging:'applink jump+paging', web:'豆包网页版', desktop:'桌面客户端 deeplink' }[k];
+      if (k === 'web') {
+        window.open(url, '_blank', 'noopener');
+        log('打开 ' + label + ' → 新标签页', 'c-warn');
+      } else {
+        window.location.href = url;
+        log('触发 ' + label, 'c-warn');
+      }
+      log('  观察：能否打开 / 提示词是否带入 / 是否自动发送', 'c-dim');
+      return;
+    }
+
+    var cp = e.target.closest('[data-copy]');
+    if (cp) {
+      var u = BUILD[cp.dataset.copy](promptEl.value);
+      copy(u).then(function(ok){
+        toast(ok ? '链接已复制' : '复制失败，请手动选中');
+        log(ok ? '已复制链接：' + cp.dataset.copy : '复制链接失败', ok ? 'c-ok' : 'c-bad');
+      });
+    }
+  });
+
+  /* ── 智能分流 ── */
+  function tryScheme(url, wait){
+    return new Promise(function(resolve){
+      var jumped = false;
+      function onHide(){ if (document.hidden) jumped = true; }
+      document.addEventListener('visibilitychange', onHide);
+      var f = document.createElement('iframe');
+      f.style.display = 'none'; f.src = url;
+      document.body.appendChild(f);
+      setTimeout(function(){
+        document.removeEventListener('visibilitychange', onHide);
+        if (f.parentNode) f.parentNode.removeChild(f);
+        resolve(jumped);
+      }, wait || 2200);
+    });
+  }
+
+  $('#smart').addEventListener('click', function(){
+    var p = promptEl.value;
+    log('———— 开始分流 ————', 'c-dim');
+    copy(p).then(function(copied){
+      log(copied ? '① 提示词已写入剪贴板' : '① 剪贴板写入失败', copied ? 'c-ok' : 'c-bad');
+
+      if (inLark) {
+        log('② 判定：飞书端内 → applink', 'c-ok');
+        log('③ 提示词将自动带入并发送', 'c-ok');
+        window.location.href = applink(p, {clickType:'smart_inlark'});
+        return;
+      }
+
+      log('② 判定：浏览器 → 先试唤起飞书客户端', 'c-warn');
+      return tryScheme(applink(p, {clickType:'smart_browser'})).then(function(jumped){
+        if (jumped) {
+          log('③ 飞书已唤起，提示词由飞书注入豆包', 'c-ok');
+        } else {
+          log('③ 未唤起飞书，降级到豆包网页版', 'c-warn');
+          log('④ 提示词会丢失，请手动粘贴', 'c-bad');
+          toast('已复制提示词，粘贴到豆包输入框即可开始搭建');
+          window.open(webLink(p), '_blank', 'noopener');
+        }
+      });
+    });
+  });
+
+  $('#copy-only').addEventListener('click', function(){
+    copy(promptEl.value).then(function(ok){
+      toast(ok ? '已复制提示词，发送给你的 Agent 即可开始搭建' : '复制失败');
+      log(ok ? '已复制提示词' : '复制失败', ok ? 'c-ok' : 'c-bad');
+    });
+  });
+
+  $('#dl').addEventListener('click', function(){
+    window.open('https://www.doubao.com/work', '_blank', 'noopener');
+    log('打开豆包工作下载页', 'c-dim');
+  });
+
+  promptEl.addEventListener('input', render);
+  render();
+  log('测试台就绪，当前环境：' + (inLark ? '飞书客户端内' : '普通浏览器'), 'c-dim');
+})();
+</script>
+</body>
+</html>
