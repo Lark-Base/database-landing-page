@@ -7,7 +7,6 @@
 必须通过 HTTP 打开（`main.js` 是 ES module，`file://` 下会被 CORS 拦住）：
 
 ```bash
-cd src
 python3 -m http.server 8000
 # 打开 http://localhost:8000
 ```
@@ -16,13 +15,13 @@ python3 -m http.server 8000
 
 ## 目录
 
-```
-src/
+```text
+.
 ├── index.html        页面结构（六个 section）
 ├── styles.css        全部样式，顶部是 --asset-* 背景图变量
 ├── main.js           hero 轮播 / 对比表 / 滚动淡入
 ├── ascii-trail.js    ASCII 流体背景（独立模块）
-├── assets/           48 个图片资源
+├── assets/           图片资源
 └── fonts/            FZ 字体三个字重
 ```
 

@@ -12,3 +12,6 @@ _tw-recovery/
 # 依赖与构建产物（本站为纯静态，无构建）
 node_modules/
 dist/
+
+# 本地 deeplink/协议联调页，不纳入仓库
+protocol-test/
