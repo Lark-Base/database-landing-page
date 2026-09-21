@@ -5,57 +5,72 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>多维表格数据库 · 一句话就是一个业务系统</title>
-  <link rel="stylesheet" href="./styles.css?v=20260921-16">
+  <link rel="stylesheet" href="./styles.css?v=20260921-32">
 </head>
 
 <body>
   <main>
 
-    <!-- ================= HERO ================= -->
-    <section class="hero recording-hero" id="top">
-      <div class="hero-interactive-background recording-background" data-hover-effect="ascii-trail" aria-hidden="true">
+    <!-- ================= HERO（安装器版本） ================= -->
+    <section class="hero is-expanded" id="top">
+      <div class="hero-interactive-background" data-hover-effect="ascii-trail" aria-hidden="true">
         <img class="hero-ascii-source" data-ascii-source="true" alt="" src="./assets/hero-clean-background.png">
         <canvas class="pointer-events-none absolute inset-0 hero-ascii" data-ascii-overlay-state="init" aria-hidden="true"></canvas>
       </div>
 
       <div class="hero-content">
         <div class="hero-heading">
-          <div class="brand">
-            <img class="brand-mark" alt="多维表格" width="39" height="39" src="./assets/brand-mark.svg">
-            <span class="brand-name">多维表格数据库</span>
-          </div>
-          <h1>一句话就是一个业务系统</h1>
+          <img class="brand" alt="飞书多维表格" width="216" height="39" src="./assets/brand-lockup.svg">
+          <h1>AI 时代的数据底座</h1>
           <p class="subtitle">让 Agent 以多维表格为数据底座搭建系统，<br>只需一句指令，前端页面、后端数据、权限管理全部就绪。</p>
         </div>
 
-        <button class="primary-cta signup-footer signup-top" id="doubao-cta" type="button">
-          <span class="cta-label">使用豆包工作开始</span>
-          <img class="cta-arrow" alt="" src="./assets/74-29935-imgGroup1912054348.svg">
-        </button>
-
-        <p class="quick-start">使用其他 Agent？<span class="divider"></span><button class="text-link copy-prompt" id="copy-prompt" type="button">复制提示词 <span class="copy-icon" aria-hidden="true"></span></button></p>
-
-      </div>
-
-      <!-- 扇形轮播：同时展示 3 张，中间水平最大，两侧缩小并向外倾斜 -->
-      <div class="hero-preview" data-image-scene="0">
-        <div class="fan-stage">
-          <div class="fan-card" data-slot="left" aria-hidden="true">
-            <img alt="" loading="eager" decoding="async" src="./assets/hero-personal-workspace-original.jpg">
+        <div class="installer">
+          <div class="install-intro">
+            <span class="step-number">01</span>
+            <p>将下方提示词复制给你的 AI 助手<span class="agent-examples">（豆包、Claude Code、Codex、Cursor 等）</span>，它会自动完成安装。</p>
           </div>
-          <div class="fan-card" data-slot="center" role="img">
-            <img alt="" loading="eager" decoding="async" src="./assets/hero-crm-workspace-original.jpg">
+
+          <div class="code-block">
+            <button class="code-heading" type="button" aria-expanded="true" aria-controls="install-code">
+              <span>提示词</span>
+              <span class="code-toggle-icon" aria-hidden="true"><img class="icon" alt="" src="./assets/down.svg"></span>
+            </button>
+            <div class="code-collapse" id="install-code">
+              <div>
+                <pre id="install-code-pre">请帮我在本地执行以下命令
+安装 Lark CLI（已安装则跳过）
+npx @larksuite/cli@latest install
+
+安装 Lark Base Database Skill
+（同时安装到豆包工作和更多通用 Agent，如 Trae、Codex、Claude Code）
+npx @lark-base-open/base-site-cli@latest skill install --target all --force</pre>
+              </div>
+            </div>
           </div>
-          <div class="fan-card" data-slot="right" aria-hidden="true">
-            <img alt="" loading="eager" decoding="async" src="./assets/hero-ai-scheduling-original.jpg">
-          </div>
-          <div class="fan-card" data-slot="hidden" aria-hidden="true">
-            <img alt="" loading="eager" decoding="async" src="./assets/hero-smart-home-original.jpg">
+
+          <div class="install-bottom-actions">
+            <button class="copy-install" type="button" data-copy-target="install-code-pre">
+              <img class="icon" alt="" src="./assets/copy-v2.svg">复制提示词
+            </button>
+            <a class="guide-link" href="https://go.larkoffice.com/join-chat/b06lf889-273a-4a47-9aba-dfcc6b8eb69f" target="_blank" rel="noreferrer">加入交流群<span class="guide-arrow" aria-hidden="true"></span></a>
           </div>
         </div>
 
+        <div class="steps">
+          <article class="step">
+            <span class="step-number">02</span>
+            <h3>描述你的需求，Agent 来搭建</h3>
+            <p>Agent 基于多维表格数据库生成界面、写入数据</p>
+          </article>
+          <img class="step-arrow" alt="" src="./assets/74-29019-imgVector3408.svg">
+          <article class="step">
+            <span class="step-number">03</span>
+            <h3>预览发布上线</h3>
+            <p>满意后，让 Agent 直接发布，拿到链接团队直接用</p>
+          </article>
+        </div>
       </div>
-
     </section>
 
     <!-- ================= AGENTS ================= -->
@@ -90,6 +105,14 @@
           <img width="119.73" height="28.39" alt="Cursor" src="./assets/agent-imgGroup2.svg">
         </div>
         <span class="agent-row-break" aria-hidden="true"></span>
+      </div>
+      <div class="agent-start-links">
+      <p class="quick-start agent-quick-start agent-quick-line1">
+        <a class="text-link" href="doubao://" target="_blank" rel="noreferrer">用豆包工作开始<span class="guide-arrow" aria-hidden="true"></span></a>
+      </p>
+      <p class="quick-start agent-quick-start agent-quick-line2">
+        <span>没有安装豆包工作？</span><span class="divider"></span><a class="text-link" href="https://www.doubao.com/work/" target="_blank" rel="noreferrer">立即下载</a>
+      </p>
       </div>
     </section>
 
@@ -130,11 +153,10 @@
             <span class="case-label">CASE 01・人力调度</span>
             <h3>AI 智能排班系统</h3>
             <p>自动生成员工排班表，工时成本实时核算，班次冲突智能提醒。</p>
-            <div class="case-actions">
-              <button class="copy-small case-build" type="button" data-case="ai-scheduling">用豆包工作搭建</button>
-              <button class="text-link copy-prompt case-copy-prompt" type="button" data-case="ai-scheduling">复制提示词 <span class="copy-icon" aria-hidden="true"></span></button>
-            </div>
-          </div>
+            <div class="prompt-box">
+              <p>做一套 AI 智能排班系统，自动生成员工排班表</p>
+              <button class="copy-small case-prompt-copy" type="button" data-case="ai-scheduling" aria-label="复制提示词">复制</button>
+            </div>          </div>
           <div class="case-visual">
             <img alt="AI 智能排班系统界面示意" width="1400" height="932" src="./assets/case-4.jpg">
           </div>
@@ -144,11 +166,10 @@
             <span class="case-label">CASE 02・内容营销</span>
             <h3>智能家居素材管理平台</h3>
             <p>商品信息一键生成图文视频矩阵，素材分类管理，多端预览分发。</p>
-            <div class="case-actions">
-              <button class="copy-small case-build" type="button" data-case="smart-home">用豆包工作搭建</button>
-              <button class="text-link copy-prompt case-copy-prompt" type="button" data-case="smart-home">复制提示词 <span class="copy-icon" aria-hidden="true"></span></button>
-            </div>
-          </div>
+            <div class="prompt-box">
+              <p>做一个智能家居素材平台，把商品变成内容矩阵</p>
+              <button class="copy-small case-prompt-copy" type="button" data-case="smart-home" aria-label="复制提示词">复制</button>
+            </div>          </div>
           <div class="case-visual">
             <img alt="智能家居素材管理平台界面示意" width="1400" height="932" src="./assets/case-3.jpg">
           </div>
@@ -158,11 +179,10 @@
             <span class="case-label">CASE 03・销售管理</span>
             <h3>CRM 销售工作台</h3>
             <p>客户商机统一管理，跟进记录自动同步，销售数据实时监控。</p>
-            <div class="case-actions">
-              <button class="copy-small case-build" type="button" data-case="crm">用豆包工作搭建</button>
-              <button class="text-link copy-prompt case-copy-prompt" type="button" data-case="crm">复制提示词 <span class="copy-icon" aria-hidden="true"></span></button>
-            </div>
-          </div>
+            <div class="prompt-box">
+              <p>搭一套 CRM 销售工作台，统一管理客户和商机跟进</p>
+              <button class="copy-small case-prompt-copy" type="button" data-case="crm" aria-label="复制提示词">复制</button>
+            </div>          </div>
           <div class="case-visual">
             <img alt="CRM 销售工作台界面示意" width="1400" height="932" src="./assets/case-1.jpg">
           </div>
@@ -172,11 +192,10 @@
             <span class="case-label">CASE 04・效率工具</span>
             <h3>个人效率工作台</h3>
             <p>任务清单、专注计时、每日回顾一体化，进度自动统计。</p>
-            <div class="case-actions">
-              <button class="copy-small case-build" type="button" data-case="productivity">用豆包工作搭建</button>
-              <button class="text-link copy-prompt case-copy-prompt" type="button" data-case="productivity">复制提示词 <span class="copy-icon" aria-hidden="true"></span></button>
-            </div>
-          </div>
+            <div class="prompt-box">
+              <p>搭一个个人效率工作台，管理任务和专注记录</p>
+              <button class="copy-small case-prompt-copy" type="button" data-case="productivity" aria-label="复制提示词">复制</button>
+            </div>          </div>
           <div class="case-visual">
             <img alt="个人效率工作台界面示意" width="1400" height="932" src="./assets/case-2.jpg">
           </div>
@@ -206,6 +225,9 @@
           </div>
           <pre data-top-fade="false" data-bottom-fade="false"></pre>
         </div>
+        <p class="template-group-link">
+          <a class="text-link" href="https://go.larkoffice.com/join-chat/b06lf889-273a-4a47-9aba-dfcc6b8eb69f" target="_blank" rel="noreferrer">加入交流群，获取更多模板<span class="guide-arrow" aria-hidden="true"></span></a>
+        </p>
       </div>
     </section>
 
@@ -248,18 +270,21 @@
       <div class="footer-content reveal">
         <h2>你的下一个业务系统<br>从一句话开始</h2>
         <div class="footer-actions">
-          <button class="primary-cta signup-footer" id="footer-cta" type="button">
-            <span class="cta-label">使用豆包工作开始</span>
+          <button class="primary-cta" id="footer-cta" type="button">
+            <span class="cta-label">复制提示词，发给你的 Agent</span>
             <img class="cta-arrow" alt="" src="./assets/74-29935-imgGroup1912054348.svg">
           </button>
         </div>
-        <p class="quick-start footer-quick-start">安装或使用中遇到问题？<span class="divider"></span><a class="text-link" href="https://bytedance.larkoffice.com/wiki/Cz9awzOhEiBGXiknGbZc5Qptn2e" target="_blank" rel="noreferrer">使用指南<span class="guide-arrow" aria-hidden="true"></span></a></p>
+        <div class="footer-help-links">
+        <p class="quick-start footer-quick-start footer-line1">安装或使用中遇到问题？<span class="divider"></span><a class="text-link" href="https://bytedance.larkoffice.com/wiki/Cz9awzOhEiBGXiknGbZc5Qptn2e?from=from_copylink" target="_blank" rel="noreferrer">使用指南</a></p>
+        <p class="quick-start footer-quick-start footer-line2"><a class="text-link" href="https://go.larkoffice.com/join-chat/b06lf889-273a-4a47-9aba-dfcc6b8eb69f" target="_blank" rel="noreferrer">加入交流群，解锁丰富使用技巧<span class="guide-arrow" aria-hidden="true"></span></a></p>
+        </div>
       </div>
     </footer>
 
   </main>
 
-  <script type="module" src="./main.js?v=20260921-23"></script>
+  <script type="module" src="./main.js?v=20260921-29"></script>
 </body>
 
 </html>

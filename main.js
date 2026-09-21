@@ -81,125 +81,41 @@ const COMPACT_ROWS = [COMPARISON_ROWS[1], COMPARISON_ROWS[2], COMPARISON_ROWS[5]
 /* ================= hero 轮播 ================= */
 
 function initHero() {
-  const demand = document.querySelector('.hero-demand');
-  const typing = document.querySelector('.demand-typing');
-  const preview = document.querySelector('.hero-preview');
-  const stage = document.querySelector('.fan-stage');
-  const heroContent = document.querySelector('.hero-content');
-  // 提示词容器已移除，demand / typing 可能不存在；扇形轮播不依赖它们
-  if (!preview || !stage || !heroContent) return;
+  // 新版 Hero：安装器（提示词折叠 + 复制提示词）。
+  const hero = document.querySelector('.hero');
+  if (!hero) return;
 
-  // 前两个是装饰性纸张，后面才是图片卡
-  const cards = [...stage.querySelectorAll('.fan-card')];
-  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
-
-  let rafId = 0;
-  let elapsed = 0;
-  let lastNow = 0;
-  let visible = true;
-  let lastKey = '';
-  let currentSceneIndex = -1;
-
-  /** 打字机：只在场景切换时重建 DOM，之后仅切 class */
-  const renderTyping = (sceneIndex, count) => {
-    if (!typing) return;
-    if (sceneIndex !== currentSceneIndex) {
-      currentSceneIndex = sceneIndex;
-      typing.textContent = '';
-      const frag = document.createDocumentFragment();
-      for (const ch of SCENES[sceneIndex].prompt) {
-        const span = document.createElement('span');
-        span.className = 'typed-character';
-        span.textContent = ch;
-        frag.appendChild(span);
-      }
-      typing.appendChild(frag);
-    }
-    const chars = typing.children;
-    for (let i = 0; i < chars.length; i += 1) {
-      chars[i].classList.toggle('is-visible', i < count);
-    }
-  };
-
-  const apply = ({ index, imageIndex, count, fading, switching }) => {
-    if (demand) {
-      demand.dataset.scene = String(index);
-      demand.setAttribute('aria-label', SCENES[index].prompt);
-    }
-    if (typing) {
-      typing.dataset.visibleCharacters = String(count);
-      typing.classList.toggle('is-fading', fading);
-    }
-    renderTyping(index, count);
-
-    preview.dataset.imageScene = String(imageIndex);
-    preview.setAttribute('aria-label', SCENES[imageIndex].name);
-
-    // 扇形槽位：当前图在中心，前一张在左、后一张在右，其余待命
-    cards.forEach((card, i) => {
-      const offset = (i - imageIndex + cards.length) % cards.length;
-      let slot;
-      if (offset === 0) slot = 'center';
-      else if (offset === 1) slot = 'right';
-      else if (offset === cards.length - 1) slot = 'left';
-      else slot = 'hidden';
-      card.dataset.slot = slot;
-      if (slot === 'center') card.setAttribute('role', 'img');
-      else card.removeAttribute('role');
-      card.setAttribute('aria-hidden', slot === 'center' ? 'false' : 'true');
+  // 终端提示词展开 / 收起
+  const heading = hero.querySelector('.code-heading');
+  const toggleIcon = hero.querySelector('.code-toggle-icon .icon');
+  if (heading) {
+    heading.addEventListener('click', () => {
+      const expanded = hero.classList.toggle('is-expanded');
+      heading.setAttribute('aria-expanded', String(expanded));
+      if (toggleIcon) toggleIcon.style.transform = expanded ? '' : 'rotate(180deg)';
     });
-  };
+  }
 
-  const tick = (now) => {
-    if (lastNow) elapsed += now - lastNow;
-    lastNow = now;
-
-    const cycle = Math.floor(elapsed / SCENE_DURATION);
-    const index = cycle % SCENES.length;
-    const offset = elapsed % SCENE_DURATION;
-    const prompt = SCENES[index].prompt;
-
-    const count = Math.min(
-      prompt.length,
-      Math.max(0, Math.floor(((offset - LEAD_IN) / TYPING) * prompt.length)),
-    );
-    // 图片比文字晚一拍切换，制造错位感
-    const imageIndex = cycle > 0 && offset < TYPED_END
-      ? (index + SCENES.length - 1) % SCENES.length
-      : index;
-    const fading = offset >= TYPED_END + HOLD;
-    const switching = cycle > 0 && offset >= TYPED_END && offset < TYPED_END + SWITCH_WINDOW;
-
-    const key = `${index}:${imageIndex}:${count}:${fading}:${switching}`;
-    if (key !== lastKey) {
-      apply({ index, imageIndex, count, fading, switching });
-      lastKey = key;
-    }
-    rafId = requestAnimationFrame(tick);
-  };
-
-  const sync = () => {
-    cancelAnimationFrame(rafId);
-    lastNow = 0;
-    if (reduceMotion.matches) {
-      // 降级为静态首帧
-      elapsed = 0;
-      lastKey = '';
-      apply({ index: 0, imageIndex: 0, count: SCENES[0].prompt.length, fading: false, switching: false });
-      return;
-    }
-    if (visible && !document.hidden) rafId = requestAnimationFrame(tick);
-  };
-
-  const io = new IntersectionObserver(([entry]) => {
-    visible = entry.isIntersecting;
-    sync();
-  });
-  io.observe(heroContent);
-
-  reduceMotion.addEventListener('change', sync);
-  document.addEventListener('visibilitychange', sync);
-  sync();
+  // 「复制提示词」：纯 text/plain，复制 #install-code-pre 的原文
+  const copyBtn = hero.querySelector('.copy-install');
+  const pre = document.getElementById('install-code-pre');
+  if (copyBtn && pre) {
+    const original = copyBtn.innerHTML;
+    let timer = 0;
+    copyBtn.addEventListener('click', async () => {
+      if (copyBtn.dataset.copied === 'true') return;
+      const text = INSTALL_PROMPT;
+      const ok = await writeClipboard(text);
+      if (!ok) return;
+      copyBtn.dataset.copied = 'true';
+      copyBtn.textContent = '已复制';
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        copyBtn.dataset.copied = 'false';
+        copyBtn.innerHTML = original;
+      }, 1600);
+    });
+  }
 }
 
 /* ================= 对比表 ================= */
@@ -367,6 +283,15 @@ npx @larksuite/cli@latest install
 npx @lark-base-open/base-site-cli@latest skill install --target all --force
 安装完成后，告诉我可以用多维表格数据库做什么，并给我 3 个搭建业务系统的灵感。`;
 
+const INSTALL_PROMPT_BODY = `请帮我在本地执行以下命令
+安装 Lark CLI（已安装则跳过）
+npx @larksuite/cli@latest install
+
+安装 Lark Base Database Skill
+（同时安装到豆包工作和更多通用 Agent，如 Trae、Codex、Claude Code）
+npx @lark-base-open/base-site-cli@latest skill install --target all --force`;
+const INSTALL_PROMPT = INSTALL_PROMPT_BODY;
+
 const DOUBAO_URL = 'https://applink.feishu.cn/client/doubao/open?open_in=feed';
 
 /**
@@ -419,75 +344,59 @@ function initHeroCta() {
     const arrow = cta.querySelector('.cta-arrow');
     const original = label.textContent;
 
+    const isFooter = cta.id === 'footer-cta';
     cta.addEventListener('click', async () => {
       if (cta.classList.contains('is-busy')) return;
 
-      await writeClipboard(DOUBAO_PROMPT);
+      // 页尾 CTA：只复制安装提示词（含结尾引导句），不跳转
+      await writeClipboard(isFooter ? INSTALL_PROMPT : DOUBAO_PROMPT);
 
-      // 进入「已复制，正在跳转」状态：箭头换对勾（直接切 src，兼容 Safari），省略号逐点闪烁
       cta.classList.add('is-busy');
-      if (arrow) arrow.src = CHECK_SRC;
+      if (arrow && !isFooter) arrow.src = CHECK_SRC;
       label.textContent = '';
-      label.append('提示词已复制，正在跳转');
-      const dots = document.createElement('span');
-      dots.className = 'cta-dots';
-      for (let i = 0; i < 3; i += 1) {
-        const dot = document.createElement('i');
-        dot.textContent = '.';
-        dots.appendChild(dot);
+      label.append(isFooter ? '已复制' : '提示词已复制，正在跳转');
+      if (!isFooter) {
+        const dots = document.createElement('span');
+        dots.className = 'cta-dots';
+        for (let i = 0; i < 3; i += 1) {
+          const dot = document.createElement('i');
+          dot.textContent = '.';
+          dots.appendChild(dot);
+        }
+        label.appendChild(dots);
       }
-      label.appendChild(dots);
 
       setTimeout(() => {
-        window.open(DOUBAO_URL, '_blank', 'noopener');
-        // 跳转后复位，便于再次点击
+        if (!isFooter) window.open(DOUBAO_URL, '_blank', 'noopener');
         cta.classList.remove('is-busy');
         if (arrow) arrow.src = ARROW_SRC;
         label.textContent = original;
-      }, 2000);
+      }, isFooter ? 1600 : 2000);
     });
   };
 
-  ['doubao-cta', 'footer-cta']
+  // Hero CTA 现在是参考页的「内测报名」外链（<a href>），保持原生跳转，不做复制/劫持；
+  // 只有页尾的主 CTA 仍保留复制提示词 + 跳转豆包工作的交互。
+  ['footer-cta']
     .map((id) => document.getElementById(id))
     .filter(Boolean)
     .forEach(bindCta);
 
-  // 案例卡片内的按钮：提示词取自各自的 data-prompt
-  for (const btn of document.querySelectorAll('.case-build')) {
-    const label = btn.textContent;
+  // UseCase 卡片：参考站点的「一句话预览 + 复制」按钮，复制完整提示词
+  for (const btn of document.querySelectorAll('.case-prompt-copy')) {
     let timer;
     btn.addEventListener('click', async () => {
-      if (btn.classList.contains('is-done')) return;
-      await writeClipboard(CASE_PROMPTS[btn.dataset.case]);
-      btn.classList.add('is-done');
-      // 与 hero CTA 一致：文案 + 三点闪烁
-      btn.textContent = '';
-      btn.append('已复制，正在跳转');
-      const dots = document.createElement('span');
-      dots.className = 'cta-dots';
-      for (let i = 0; i < 3; i += 1) {
-        const dot = document.createElement('i');
-        dot.textContent = '.';
-        dots.appendChild(dot);
-      }
-      btn.appendChild(dots);
-      timer = setTimeout(() => {
-        window.open(DOUBAO_URL, '_blank', 'noopener');
-        btn.classList.remove('is-done');
-        btn.textContent = label;
-      }, 2000);
-    });
-  }
-
-  for (const btn of document.querySelectorAll('.case-copy-prompt')) {
-    let timer;
-    btn.addEventListener('click', async () => {
+      if (btn.dataset.copied === 'true') return;
       const ok = await writeClipboard(CASE_PROMPTS[btn.dataset.case]);
       if (!ok) return;
-      btn.classList.add('is-copied');
+      const original = btn.textContent;
+      btn.dataset.copied = 'true';
+      btn.textContent = '已复制';
       clearTimeout(timer);
-      timer = setTimeout(() => btn.classList.remove('is-copied'), 2000);
+      timer = setTimeout(() => {
+        btn.dataset.copied = 'false';
+        btn.textContent = original;
+      }, 1600);
     });
   }
 
