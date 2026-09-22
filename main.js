@@ -8,6 +8,8 @@
  * 5. ASCII 拖尾背景
  */
 
+import { t, prompts, installPrompt, initLanguage } from './i18n.js?v=20260922-4';
+
 import { createAsciiTrail } from './ascii-trail.js?v=20260922-2';
 
 // 交互反馈时长，单位为毫秒。
@@ -19,7 +21,7 @@ const LOADING_DOT_COUNT = 3;
 
 /* ================= 数据 ================= */
 
-const CASE_PROMPTS = {
+const ZH_CASE_PROMPTS = {
   'ai-scheduling':
     '帮我基于飞书多维表格数据库 /lark-base-database 搭建连锁门店 AI 排班系统，以多维表格管理数据，串联排班、审批和员工反馈。\n\n主要页面和功能：\n\n* 排班日历：支持月、周视图及门店、员工筛选，查看班次详情、工时、成本和缺员情况。\n* AI 排班：用自然语言描述人数和技能需求，结合营业时间、可用时段、休假及工时限制生成草稿，支持手动调整、冲突检查和确认发布。\n* 员工管理：维护门店归属、技能、用工类型、时薪及可出勤时段，支持新增、编辑和停用。\n* 门店管理：维护营业时间、节假日和排班模板。\n* 审批待办：处理人员变更和休假申请，查看原因与进度。\n* 我的班次：查看班次、确认或拒绝出勤、申请休假及报名补班。\n\n顶部放品牌、导航和账号；主区上方展示工时、成本、缺口等指标卡，下方以大日历为核心，筛选与排班按钮置于日历工具栏。班次详情用侧边抽屉，AI 排班分步展示需求、草稿和发布。采用天空渐变、圆角卡片与清晰留白，用颜色区分班次状态，支持明暗主题和手机布局。\n\n总部管理全局，店长负责本店，员工操作本人信息。AI 草稿经人工确认发布，缺员时保留提示；操作真实保存，发布后通知员工，反馈与补班同步更新班表。提供虚构数据演示完整流程。\n\n在开始之前，若未安装多维表格数据库 CLI 和 Skill，请先完成安装：\n\n安装 Lark CLI（已安装则跳过）\nnpx @larksuite/cli@latest install\n\n安装 Lark Base Database Skill（已安装则跳过）\nnpx @lark-base-open/base-database-cli@latest skill install --target all --force',
   'smart-home':
@@ -29,7 +31,7 @@ const CASE_PROMPTS = {
     '帮我基于飞书多维表格数据库 /lark-base-database 搭建个人效率工作台，以多维表格管理数据，串联任务收集、每日规划、专注执行和工作回顾。\n\n主要页面和功能：\n\n* 今日：展示日期、个性化问候和今日最重要的一件事，可直接开始 25 分钟专注；支持快速记录想法或待办，按焦点、重要、普通、回顾分类。\n* 任务：集中管理待办与目标，维护优先级、截止日期和状态，支持搜索筛选、编辑、完成及重新打开；可将任务设为今日焦点，关联目标并查看进展。\n* 专注：围绕选定任务开始、暂停和结束计时，记录实际专注时长及完成情况；结束后可完成任务或继续下一轮，历史记录关联原任务。\n* 回顾：按日、周查看已完成任务、专注投入和目标进度，记录今日完成感、心得及下一步计划，支持查看与编辑历史回顾。\n* 数据概览：自动汇总今日完成数及完成比例、专注分钟数与记录数、进行中目标数量，以及回顾中填写的完成感评分。\n\n顶部采用居中的胶囊导航，包含品牌、今日、任务、回顾、搜索和账号入口。主区以日期和大字号问候开场，下方左侧突出今日焦点与专注按钮，右侧提供快速记录输入框和分类选项，再往下排列四张数据概览卡。任务编辑使用侧边抽屉，专注过程突出倒计时与当前任务。\n\n界面采用浅紫到浅蓝的柔和渐变背景、白色圆角卡片和紫色强调按钮，保持宽松留白；问候与焦点标题使用有书写感的衬线字体，导航、正文和数字清晰易读。文案温和、强调行动与回顾，适配手机布局，完善加载、空态、错误和操作反馈。\n\n任务、目标、专注记录和回顾存入多维表格，各页面数据同步更新。刷新后保留任务状态及进行中的计时，避免重复记录专注时长；不同用户仅访问自己的数据。提供虚构任务、目标和历史记录，演示从快速记录、设为焦点、开始专注到完成回顾的完整流程。\n\n在开始之前，若未安装多维表格数据库 CLI 和 Skill，请先完成安装：\n\n安装 Lark CLI（已安装则跳过）\nnpx @larksuite/cli@latest install\n\n安装 Lark Base Database Skill（已安装则跳过）\nnpx @lark-base-open/base-database-cli@latest skill install --target all --force',
 };
 
-const TEMPLATES = [
+const ZH_TEMPLATES = [
   {
     name: '轻量 ERP（进销存）',
     prompt:
@@ -66,6 +68,14 @@ const TEMPLATES = [
       '帮我基于飞书多维表格数据库 /lark-base-database 搭建个人阅读记录工具，以多维表格管理数据，串联书单、阅读进度、摘抄笔记和阅读回顾。\n\n主要页面和功能：\n\n* 我的书架：以封面展示想读、在读、已读书籍，按作者、分类、标签和状态筛选，支持搜索及新增书籍。\n* 书籍详情：维护书名、作者、封面、总页数和阅读目标，更新当前页码，查看进度、阅读历程和关联笔记；读完后填写评分与短评。\n* 阅读记录：按日期记录起止页码、阅读时长和心得，支持补录与修正，汇总每本书的实际阅读投入。\n* 笔记：按书籍和章节保存摘抄、个人想法及页码，支持标签、全文搜索和编辑，从笔记返回对应书籍。\n* 阅读回顾：展示本月读完数量、阅读页数、投入时长和分类分布，查看阅读日历，记录阶段总结与下一本计划。\n\n采用顶部书架、笔记、回顾导航和全局搜索，主区以封面网格呈现书籍；详情左侧放封面与进度，右侧排列阅读记录和笔记，快速记录使用抽屉。使用纸张感米白背景、深棕正文和低饱和陶土色，书名采用衬线字体、数据使用清晰数字，保持舒展留白，适配手机单手记录。\n\n当前页码限定在总页数范围内，缺少总页数时不显示百分比；读完记录完成日期，重读建立独立阅读轮次，保留原有笔记和历史。修正记录后重新汇总统计，同一天多次阅读分别保存。数据持久存入多维表格且仅本人可访问，完善加载、空态及错误反馈，提供虚构书籍和原创示例笔记，演示从加入书架、更新进度、记录心得到完成回顾的流程。\n\n在开始之前，若未安装多维表格数据库 CLI 和 Skill，请先完成安装：\n\n安装 Lark CLI（已安装则跳过）\nnpx @larksuite/cli@latest install\n\n安装 Lark Base Database Skill（已安装则跳过）\nnpx @lark-base-open/base-database-cli@latest skill install --target all --force',
   },
 ];
+
+const CASE_PROMPTS = prompts
+  ? Object.fromEntries(Object.keys(ZH_CASE_PROMPTS).map((key, i) => [key, prompts[i]]))
+  : ZH_CASE_PROMPTS;
+const TEMPLATES = ZH_TEMPLATES.map((item, i) => ({
+  name: t(item.name),
+  prompt: prompts?.[i + 4] ?? item.prompt,
+}));
 
 const COMPARISON_COLUMNS = ['Excel 手工管理', '自建开发', '传统低代码', '多维表格数据库 CLI × AI'];
 const COMPARISON_ROWS = [
@@ -124,7 +134,7 @@ function initHero() {
         return;
       }
       copyBtn.dataset.copied = 'true';
-      copyBtn.textContent = '已复制';
+      copyBtn.textContent = t('已复制');
       window.clearTimeout(timer);
       timer = window.setTimeout(() => {
         copyBtn.dataset.copied = 'false';
@@ -159,7 +169,7 @@ function initComparison() {
     for (const label of ['维度', ...COMPARISON_COLUMNS]) {
       const th = document.createElement('th');
       th.scope = 'col';
-      th.textContent = label;
+      th.textContent = t(label);
       headRow.appendChild(th);
     }
     thead.appendChild(headRow);
@@ -172,7 +182,7 @@ function initComparison() {
         if (i === 0) {
           el.scope = 'row';
         }
-        el.textContent = cell;
+        el.textContent = t(cell);
         tr.appendChild(el);
       });
       tbody.appendChild(tr);
@@ -194,7 +204,7 @@ function initComparison() {
       const article = document.createElement('article');
       article.className = 'comparison-card';
       const h4 = document.createElement('h4');
-      h4.textContent = row[0];
+      h4.textContent = t(row[0]);
       const dl = document.createElement('dl');
       // 结论列前置
       for (const col of COMPARISON_CARD_COLUMN_ORDER) {
@@ -203,9 +213,9 @@ function initComparison() {
           div.className = 'comparison-highlight';
         }
         const dt = document.createElement('dt');
-        dt.textContent = COMPARISON_COLUMNS[col - 1];
+        dt.textContent = t(COMPARISON_COLUMNS[col - 1]);
         const dd = document.createElement('dd');
-        dd.textContent = row[col];
+        dd.textContent = t(row[col]);
         div.append(dt, dd);
         dl.appendChild(div);
       }
@@ -217,7 +227,7 @@ function initComparison() {
     toggle.className = 'comparison-toggle';
     toggle.setAttribute('aria-expanded', String(expanded));
     toggle.setAttribute('aria-controls', 'comparison-cards');
-    toggle.textContent = expanded ? '收起完整对比' : '查看完整 6 项对比';
+    toggle.textContent = expanded ? t('收起完整对比') : t('查看完整 6 项对比');
     toggle.addEventListener('click', () => {
       expanded = !expanded;
       render();
@@ -317,7 +327,7 @@ npx @larksuite/cli@latest install
 安装 Lark Base Database Skill
 （同时安装到豆包工作和更多通用 Agent，如 Trae、Codex、Claude Code）
 npx @lark-base-open/base-database-cli@latest skill install --target all --force`;
-const INSTALL_PROMPT = INSTALL_PROMPT_BODY;
+const INSTALL_PROMPT = installPrompt ?? INSTALL_PROMPT_BODY;
 
 const DOUBAO_URL = 'https://applink.feishu.cn/client/doubao/open?open_in=feed';
 
@@ -361,8 +371,8 @@ async function writeClipboard(text) {
 
 function initHeroCta() {
   // hero 与 footer 两处主 CTA 行为完全一致
-  const ARROW_SRC = './assets/74-29935-imgGroup1912054348.svg';
-  const CHECK_SRC = './assets/cta-check.svg';
+  const ARROW_SRC = new URL('./assets/74-29935-imgGroup1912054348.svg', import.meta.url).href;
+  const CHECK_SRC = new URL('./assets/cta-check.svg', import.meta.url).href;
 
   const bindCta = (cta) => {
     const label = cta.querySelector('.cta-label');
@@ -376,14 +386,14 @@ function initHeroCta() {
       }
 
       // 页尾 CTA：只复制安装提示词（含结尾引导句），不跳转
-      await writeClipboard(isFooter ? INSTALL_PROMPT : DOUBAO_PROMPT);
+      await writeClipboard(isFooter ? INSTALL_PROMPT : (installPrompt ?? DOUBAO_PROMPT));
 
       cta.classList.add('is-busy');
       if (arrow && !isFooter) {
         arrow.src = CHECK_SRC;
       }
       label.textContent = '';
-      label.append(isFooter ? '已复制' : '提示词已复制，正在跳转');
+      label.append(isFooter ? t('已复制') : t('提示词已复制，正在跳转'));
       if (!isFooter) {
         const dots = document.createElement('span');
         dots.className = 'cta-dots';
@@ -431,7 +441,7 @@ function initHeroCta() {
       }
       const original = btn.textContent;
       btn.dataset.copied = 'true';
-      btn.textContent = '已复制';
+      btn.textContent = t('已复制');
       clearTimeout(timer);
       timer = setTimeout(() => {
         btn.dataset.copied = 'false';
@@ -444,7 +454,7 @@ function initHeroCta() {
   if (copyBtn) {
     let timer;
     copyBtn.addEventListener('click', async () => {
-      const ok = await writeClipboard(OTHER_AGENT_PROMPT);
+      const ok = await writeClipboard(installPrompt ?? OTHER_AGENT_PROMPT);
       if (!ok) {
         return;
       }
@@ -465,8 +475,14 @@ function initTemplates() {
   }
   const pre = panel.querySelector('pre');
   const copyBtn = panel.querySelector('.icon-button');
+  let copyTimer;
 
   const select = (index) => {
+    if (copyBtn) {
+      clearTimeout(copyTimer);
+      copyBtn.dataset.copied = 'false';
+      copyBtn.setAttribute('aria-label', t('复制当前模版指令'));
+    }
     tabs.forEach((tab, i) => {
       const on = i === index;
       tab.classList.toggle('selected', on);
@@ -518,7 +534,6 @@ function initTemplates() {
   });
 
   if (copyBtn) {
-    let timer;
     copyBtn.addEventListener('click', async () => {
       if (copyBtn.dataset.copied === 'true') {
         return;
@@ -529,9 +544,11 @@ function initTemplates() {
         return;
       }
       copyBtn.dataset.copied = 'true';
-      clearTimeout(timer);
-      timer = setTimeout(() => {
+      copyBtn.setAttribute('aria-label', t('已复制'));
+      clearTimeout(copyTimer);
+      copyTimer = setTimeout(() => {
         copyBtn.dataset.copied = 'false';
+        copyBtn.setAttribute('aria-label', t('复制当前模版指令'));
       }, TEMPLATE_COPY_FEEDBACK_MS);
     });
   }
@@ -542,6 +559,7 @@ function initTemplates() {
 /* ================= 启动 ================= */
 
 function boot() {
+  initLanguage();
   // 各模块相互独立，单个失败不应拖垮其余初始化
   for (const [name, fn] of [
     ['hero', initHero],

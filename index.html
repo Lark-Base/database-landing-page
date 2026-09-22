@@ -6,10 +6,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>多维表格数据库 · AI 时代的数据底座</title>
   <link rel="icon" type="image/svg+xml" sizes="any" href="./assets/brand-mark.svg">
-  <link rel="stylesheet" href="./styles.css?v=20260922-35">
+  <link rel="stylesheet" href="./styles.css?v=20260922-42">
 </head>
 
 <body>
+  <div class="language-switch">
+    <button id="language-select" class="language-trigger" type="button" aria-label="切换语言" aria-haspopup="menu" aria-expanded="false" aria-controls="language-menu">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h12M9 3v2M6 5c1 5 4 8 8 10M12 5c-1 5-4 8-9 11M13 21l4-10 4 10M14.5 17h5"/></svg>
+      <span class="language-current">中文</span>
+      <svg class="language-chevron" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg>
+    </button>
+    <div id="language-menu" class="language-menu" role="menu" aria-labelledby="language-select" hidden>
+      <a role="menuitemradio" aria-checked="true" href="?lang=zh" data-language="zh" lang="zh-CN" tabindex="-1">中文</a>
+      <a role="menuitemradio" aria-checked="false" href="?lang=ja" data-language="ja" lang="ja" tabindex="-1">日本語</a>
+      <a role="menuitemradio" aria-checked="false" href="?lang=en" data-language="en" lang="en" tabindex="-1">English</a>
+    </div>
+  </div>
   <main>
 
     <!-- ================= HERO（安装器版本） ================= -->
@@ -285,7 +297,7 @@ npx @lark-base-open/base-database-cli@latest skill install --target all --force<
 
   </main>
 
-  <script type="module" src="./main.js?v=20260922-34"></script>
+  <script type="module" src="./main.js?v=20260922-38"></script>
 </body>
 
 </html>
